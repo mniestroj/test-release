@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: nrf9160dk/nrf9160/ns
+            app: one
+          - target: nrf9160dk/nrf52840
+            app: two
+          - target: thingy91x/nrf9151/ns
+            app: one
+          - target: thingy91x/nrf5340/cpunet
+            app: two
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build
+        id: build
+        env:
+          TARGET: ${{ matrix.target }}
+        shell: bash
+        run: |
+          echo "app=${{ matrix.app }} target=${{ matrix.target }}" > hello.txt
+
+          echo "ARTIFACT_TARGET=${TARGET//\//-}" >> $GITHUB_OUTPUT
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-${{ steps.build.outputs.ARTIFACT_TARGET }}
+          path: |
+            hello.txt
