@@ -9,17 +9,20 @@ permissions:
 
 jobs:
   build:
-    name: Release
+    name: Build
     uses: ./.github/workflows/build.yml
 
   release:
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: artifacts
+    name: Release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
-    - name: Upload release artifacts
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          artifacts/*
+      - name: Upload release artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/*
